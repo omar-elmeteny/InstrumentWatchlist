@@ -1,14 +1,24 @@
-# Instrument Watchlist API
+# Instrument Watchlist
 
-An ASP.NET Core Web API for adding instruments to a watchlist, listing saved items, and finding the pair of items with the highest combined target price that does not exceed a target amount.
+Instrument Watchlist is a multi-project solution for adding instruments to a watchlist, listing saved items, and finding the pair with the highest combined target price that does not exceed a target amount.
 
-The API uses EF Core's InMemory provider. Data is retained only while the application is running.
+The completed API uses EF Core's InMemory provider, so data is retained only while the application is running.
 
-## Prerequisites
+## Solution Overview
+
+This repository is organized into three projects:
+
+- `InstrumentWatchlistApi`: the completed ASP.NET Core Web API and the required assessment deliverable.
+- `InstrumentWatchlistTests`: a completed xUnit test project added beyond the assessment scope to provide unit and integration coverage.
+- `InstrumentWatchlistClient`: an Angular client project reserved for future implementation; it is not part of the completed assessment scope.
+
+## API Development
+
+### Prerequisites
 
 - .NET SDK 10.0 or later
 
-## Build and run
+### Build and Run
 
 From the repository root:
 
@@ -33,17 +43,28 @@ The development HTTP URL is `http://localhost:5245`.
 
 Swagger UI is available at:
 
-```text
-http://localhost:5245/swagger
-```
+<http://localhost:5245/swagger>
 
 The OpenAPI document is available at:
 
-```text
-http://localhost:5245/openapi/v1.json
+<http://localhost:5245/openapi/v1.json>
+
+## Testing
+
+The test project includes:
+
+- Unit tests for controller responses and service behavior using Moq to isolate dependencies.
+- Integration tests that host the API with `WebApplicationFactory` and an isolated EF Core in-memory database for each endpoint test.
+
+Run all tests from the repository root:
+
+```bash
+dotnet test InstrumentWatchlistTests/InstrumentWatchlistTests.csproj
 ```
 
-## Endpoints
+## API Reference
+
+### Endpoints
 
 The API endpoints are:
 
@@ -53,7 +74,7 @@ The API endpoints are:
 | `GET` | `/watchlist-items` | List all items. |
 | `GET` | `/watchlist-items/best-pair?targetTotal={amount}` | Find the closest target-price pair. |
 
-## Verification requests
+### Verification Requests
 
 I used Swagger UI at `http://localhost:5245/swagger`.
 
@@ -395,43 +416,45 @@ Request: `GET /watchlist-items/best-pair?targetTotal=invalid`
 
 Response: `400 Bad Request` with an ASP.NET Core validation-problem-details object. Its `errors` property contains a model-binding error for `targetTotal`.
 
-## Best-pair logic
+## Best-Pair Logic
 
 ### Approach
 
-The service loads all saved items and sorts them by `TargetPrice`. It then uses two pointers: `start` begins at the lowest price and `end` at the highest.
+The service loads all saved items and sorts them by `targetPrice`, then by `symbol` alphabetically when prices are equal. It then uses two pointers: `start` begins at the lowest price and `end` at the highest.
 
 - If the `start` price exceeds `targetTotal`, then there is no qualifying pair because the smallest price already exceeds the `targetTotal`.
 - If the pair total or the `end` price exceed `targetTotal` , `end` moves left to reduce the total.
-- If the pair total qualifies, it becomes the current best when its total is greater than the best total found so far; then `start` moves right to search for a larger qualifying total.
+- If the pair total qualifies, it becomes the current best when its total is greater than the best total found so far. The pointers then move to search for a larger qualifying total while handling repeated prices.
 - If no qualifying pair is found, the response contains an empty `items`, `combinedTargetPrice: null`, and the message `"No matching pair"`.
 
 Sorting costs $O(n \log n)$ and the two-pointer scan costs $O(n)$, so the overall time complexity is $O(n \log n)$. This approach avoids checking every possible pair, which would take $O(n^2)$.
 
 ### Tie-breaking
 
-For a qualifying pair, the two symbols are first ordered alphabetically. If another pair has the same combined target price as the current best pair, the service compares the first symbol of each ordered pair and retains the pair whose first symbol comes first alphabetically. Because each pair is already internally ordered, this returns the pair that comes first alphabetically.
+For a qualifying pair, the two symbols are first ordered alphabetically. If another pair has the same combined target price as the current best pair, the service compares the first symbols. When those are also equal, it compares the second symbols. It retains the pair that comes first alphabetically as required.
 
-## Assumptions and Additional behavior
+## Assumptions and Additional Behavior
 
 - The best-pair response includes a `message` indicating whether a matching pair was found.
 - Target prices and target totals are limited to two decimal places. Entering more decimal places is not practical in general when entering prices, so the API rejects them during validation.
 
-## Issues encountered
+## Issues Encountered
 
-`dotnet watch` initially stopped after startup because the Linux user had exhausted the `inotify` watcher-instance limit. Running `DOTNET_USE_POLLING_FILE_WATCHER=1 dotnet watch` uses polling and avoids that limit. `dotnet run` is also unaffected.
+The best-pair logic initially contained several edge-case bugs. Writing unit tests exposed them. After fixing one issue, I would think of another combination of prices or symbols and discover a new failure. I spent several hours iterating between new test cases and service fixes, particularly around repeated prices and alphabetical tie-breaking. This process improved both the implementation and the test coverage.
 
-## Improvements with more time
+## Improvements with More Time
 
-- Add automated unit tests for exact matches, tie-breaking, no-match results, duplicate symbols, and validation.
 - Add a relational database, migrations, a unique database index for symbols, and a database check constraint for positive prices for production use.
-- Create a client project for this Web API project.
+- Implement the Angular client project.
 
-## Tools and resources used
+## Tools and Resources Used
 
 - .NET SDK, ASP.NET Core, EF Core InMemory, and NuGet.
 - VS Code and its C# Dev Kit tooling.
 - Swagger UI and ASP.NET Core OpenAPI support for manual endpoint exploration.
+- xUnit for unit and integration tests.
+- Moq for mocking service and repository dependencies in unit tests.
+- Microsoft.AspNetCore.Mvc.Testing and `WebApplicationFactory` for API integration tests.
 - Git and GitHub for source control and repository hosting.
 - GitHub Copilot, used as a development assistant for implementation guidance and code review.
 - Google Search for documentation and troubleshooting.
