@@ -1,0 +1,52 @@
+# .NET build artifacts
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+# Test results and code coverage
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+
+# Node and Angular build artifacts
+node_modules/
+dist/
+tmp/
+out-tsc/
+.angular/cache/
+
+# Local configuration and secrets
+appsettings.Development.json
+appsettings.Local.json
+*.local.settings.json
+.env
+.env.*
+!.env.example
+
+# IDE and editor files
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln.iml
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating-system files
+.DS_Store
+Thumbs.db

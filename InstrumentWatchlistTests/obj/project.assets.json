@@ -1134,22 +1134,6 @@
           }
         }
       },
-      "System.Net.Http.Json/10.0.12": {
-        "type": "package",
-        "compile": {
-          "lib/net10.0/_._": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net10.0/_._": {
-            "related": ".xml"
-          }
-        },
-        "build": {
-          "buildTransitive/net8.0/_._": {}
-        }
-      },
       "xunit/2.9.3": {
         "type": "package",
         "dependencies": {
@@ -2817,35 +2801,6 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "System.Net.Http.Json/10.0.12": {
-      "sha512": "n05QxPSF2kjJ6sz8FEIU4TzQ6lEGaiRtCWbjJ7MFWMqVG5CChVhl95s7vednjwnrqdiiqepjkDhGzljtCIKoPQ==",
-      "type": "package",
-      "path": "system.net.http.json/10.0.12",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "Icon.png",
-        "PACKAGE.md",
-        "THIRD-PARTY-NOTICES.TXT",
-        "buildTransitive/net461/System.Net.Http.Json.targets",
-        "buildTransitive/net462/_._",
-        "buildTransitive/net8.0/_._",
-        "buildTransitive/netcoreapp2.0/System.Net.Http.Json.targets",
-        "lib/net10.0/System.Net.Http.Json.dll",
-        "lib/net10.0/System.Net.Http.Json.xml",
-        "lib/net462/System.Net.Http.Json.dll",
-        "lib/net462/System.Net.Http.Json.xml",
-        "lib/net8.0/System.Net.Http.Json.dll",
-        "lib/net8.0/System.Net.Http.Json.xml",
-        "lib/net9.0/System.Net.Http.Json.dll",
-        "lib/net9.0/System.Net.Http.Json.xml",
-        "lib/netstandard2.0/System.Net.Http.Json.dll",
-        "lib/netstandard2.0/System.Net.Http.Json.xml",
-        "system.net.http.json.10.0.12.nupkg.sha512",
-        "system.net.http.json.nuspec",
-        "useSharedDesignerContext.txt"
-      ]
-    },
     "xunit/2.9.3": {
       "sha512": "TlXQBinK35LpOPKHAqbLY4xlEen9TBafjs0V5KnA4wZsoQLQJiirCR4CbIXvOH8NzkW4YeJKP5P/Bnrodm0h9Q==",
       "type": "package",
@@ -2998,7 +2953,6 @@
       "Microsoft.AspNetCore.Mvc.Testing >= 10.0.12",
       "Microsoft.NET.Test.Sdk >= 17.14.1",
       "Moq >= 4.20.72",
-      "System.Net.Http.Json >= 10.0.12",
       "coverlet.collector >= 6.0.4",
       "xunit >= 2.9.3",
       "xunit.runner.visualstudio >= 3.1.4"
@@ -3063,10 +3017,6 @@
           "Moq": {
             "target": "Package",
             "version": "[4.20.72, )"
-          },
-          "System.Net.Http.Json": {
-            "target": "Package",
-            "version": "[10.0.12, )"
           },
           "coverlet.collector": {
             "target": "Package",
@@ -3374,17 +3324,5 @@
         }
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1510",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "PackageReference System.Net.Http.Json will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
-      "libraryId": "System.Net.Http.Json",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    }
-  ]
+  }
 }
