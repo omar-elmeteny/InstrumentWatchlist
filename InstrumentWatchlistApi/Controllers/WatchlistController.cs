@@ -19,44 +19,44 @@ public class WatchlistController : ControllerBase
 
     [HttpPost]
     [AllowAnonymous]
-    [EndpointName("CreateWatchlist")]
+    [EndpointName("CreateWatchlistItem")]
     [EndpointSummary("Creates a new watchlist item.")]
     [EndpointDescription("Adds a new instrument to the watchlist. Symbols are stored in uppercase and must be unique.")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CreateWatchlistItemResponse>> CreateWatchlist(
+    public async Task<ActionResult<CreateWatchlistItemResponse>> CreateWatchlistItem(
         CreateWatchlistItem createWatchlistDTO)
     {
-        var createdWatchlist = await _watchlistService.AddWatchlistAsync(createWatchlistDTO);
+        var createdWatchlist = await _watchlistService.AddWatchlistItemAsync(createWatchlistDTO);
 
         if (createdWatchlist == null)
         {
             return Conflict("A watchlist with the same symbol already exists.");
         }
 
-        return CreatedAtAction(nameof(GetWatchlists), createdWatchlist);
+        return CreatedAtAction(nameof(GetWatchlistItems), createdWatchlist);
     }
 
     [HttpGet]
     [AllowAnonymous]
-    [EndpointName("GetWatchlists")]
+    [EndpointName("GetWatchlistItems")]
     [EndpointSummary("Retrieves all watchlist items.")]
     [EndpointDescription("Fetches the complete list of instruments in the watchlist.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<GetWatchlistItems>>> GetWatchlists()
+    public async Task<ActionResult<IEnumerable<GetWatchlistItems>>> GetWatchlistItems()
     {
-        return Ok(await _watchlistService.GetAllWatchlistsAsync());
+        return Ok(await _watchlistService.GetAllWatchlistItemsAsync());
     }
 
     [HttpGet("best-pair")]
     [AllowAnonymous]
-    [EndpointName("GetWatchlistBestPair")]
+    [EndpointName("GetWatchlistItemsBestPair")]
     [EndpointSummary("Retrieves the best pair of watchlist items for a given target total.")]
     [EndpointDescription("Finds the pair of instruments in the watchlist whose combined target price is closest to the specified target total.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<GetWatchlistItemsBestPair>> GetWatchlistBestPair(
+    public async Task<ActionResult<GetWatchlistItemsBestPair>> GetWatchlistItemsBestPair(
         [FromQuery] decimal? targetTotal
     )
     {
@@ -75,7 +75,7 @@ public class WatchlistController : ControllerBase
             return BadRequest("Target total cannot have more than two decimal places.");
         }
 
-        var bestPair = await _watchlistService.GetWatchlistBestPairAsync(targetTotal.Value);
+        var bestPair = await _watchlistService.GetWatchlistItemsBestPairAsync(targetTotal.Value);
 
         return Ok(bestPair);
     }

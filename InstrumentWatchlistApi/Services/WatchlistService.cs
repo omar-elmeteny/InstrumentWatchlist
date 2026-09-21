@@ -13,7 +13,7 @@ public class WatchlistService : IWatchlistService
         _watchlistRepository = watchlistRepository;
     }
 
-    public async Task<IReadOnlyList<GetWatchlistItems>> GetAllWatchlistsAsync()
+    public async Task<IReadOnlyList<GetWatchlistItems>> GetAllWatchlistItemsAsync()
     {
         var watchlists = await _watchlistRepository.GetAllAsync();
         return watchlists.Select(w => new GetWatchlistItems
@@ -24,13 +24,16 @@ public class WatchlistService : IWatchlistService
         }).ToList();
     }
 
-    public async Task<GetWatchlistItemsBestPair> GetWatchlistBestPairAsync(decimal targetTotal)
+    public async Task<GetWatchlistItemsBestPair> GetWatchlistItemsBestPairAsync(decimal targetTotal)
     {
         var watchlists = await _watchlistRepository.GetAllAsync();
-        var sortedWatchlists = watchlists.OrderBy(w => w.TargetPrice).ToList();
+        var sortedWatchlist = watchlists
+            .OrderBy(w => w.TargetPrice)
+            .ThenBy(w => w.Symbol, StringComparer.Ordinal)
+            .ToList();
 
         var start = 0;
-        var end = sortedWatchlists.Count - 1;
+        var end = sortedWatchlist.Count - 1;
 
         GetWatchlistItemsBestPair watchlistBestPair = new GetWatchlistItemsBestPair();
 
@@ -39,13 +42,13 @@ public class WatchlistService : IWatchlistService
 
         while (start < end)
         {
-            decimal combinedTargetPrice = sortedWatchlists[start].TargetPrice + sortedWatchlists[end].TargetPrice;
-            if (sortedWatchlists[start].TargetPrice >= targetTotal)
+            decimal combinedTargetPrice = sortedWatchlist[start].TargetPrice + sortedWatchlist[end].TargetPrice;
+            if (sortedWatchlist[start].TargetPrice >= targetTotal)
             {
                 watchlistBestPair.Message = "No matching pair";
                 return watchlistBestPair;
             }
-            else if (sortedWatchlists[end].TargetPrice >= targetTotal ||
+            else if (sortedWatchlist[end].TargetPrice >= targetTotal ||
                 combinedTargetPrice > targetTotal
             )
             {
@@ -54,7 +57,15 @@ public class WatchlistService : IWatchlistService
             }
             else if (combinedTargetPrice <= targetTotal)
             {
-                var pair = new[] { sortedWatchlists[start], sortedWatchlists[end] }
+
+                if (combinedTargetPrice < maxCombinedTargetPrice)
+                {
+                    start++;
+                    continue;
+                }
+                else
+                {
+                    var pair = new[] { sortedWatchlist[start], sortedWatchlist[end] }
                     .OrderBy(watchlist => watchlist.Symbol, StringComparer.Ordinal)
                     .Select(watchlist => new GetWatchlistItems
                     {
@@ -63,33 +74,64 @@ public class WatchlistService : IWatchlistService
                         Note = watchlist.Note
                     })
                     .ToList();
-                if (combinedTargetPrice > maxCombinedTargetPrice)
-                {
-                    maxCombinedTargetPrice = combinedTargetPrice;
-
-                    watchlistBestPair.Items.Clear();
-                    watchlistBestPair.Items.AddRange(pair);
-                    watchlistBestPair.CombinedTargetPrice = maxCombinedTargetPrice;
-                }
-                else if (combinedTargetPrice < maxCombinedTargetPrice)
-                {
-                    start++;
-                    continue;
-                }
-                else
-                {
-                    var existingPair = watchlistBestPair.Items;
-
-                    if (string.Compare(existingPair[0].Symbol, pair[0].Symbol, StringComparison.Ordinal) > 0)
+                    if (combinedTargetPrice > maxCombinedTargetPrice)
                     {
+                        maxCombinedTargetPrice = combinedTargetPrice;
+
                         watchlistBestPair.Items.Clear();
                         watchlistBestPair.Items.AddRange(pair);
+                        watchlistBestPair.CombinedTargetPrice = maxCombinedTargetPrice;
+                        if (combinedTargetPrice == targetTotal)
+                        {
+                            end--;
+                        }
+                        else if (combinedTargetPrice < targetTotal)
+                        {
+                            if (end != 0 && sortedWatchlist[end].TargetPrice == sortedWatchlist[end - 1].TargetPrice)
+                            {
+                                end--;
+                            }
+                            else
+                            {
+                                start++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var existingPair = watchlistBestPair.Items;
+
+                        if (string.Compare(existingPair[0].Symbol, pair[0].Symbol, StringComparison.Ordinal) > 0)
+                        {
+                            watchlistBestPair.Items.Clear();
+                            watchlistBestPair.Items.AddRange(pair);
+                        }
+                        else if (string.Compare(existingPair[0].Symbol, pair[0].Symbol, StringComparison.Ordinal) == 0 &&
+                                string.Compare(existingPair[1].Symbol, pair[1].Symbol, StringComparison.Ordinal) > 0)
+                        {
+                            watchlistBestPair.Items.Clear();
+                            watchlistBestPair.Items.AddRange(pair);
+                        }
+                        if (combinedTargetPrice == targetTotal)
+                        {
+                            end--;
+                        }
+                        else if (combinedTargetPrice < targetTotal)
+                        {
+                            if (end != 0 && sortedWatchlist[end].TargetPrice == sortedWatchlist[end - 1].TargetPrice)
+                            {
+                                end--;
+                            }
+                            else
+                            {
+                                start++;
+                            }
+                        }
                     }
                 }
-                   
+
                 watchlistBestPair.Message = "Matching pair found";
                 foundMatchingPair = true;
-                start++;
             }
         }
 
@@ -106,7 +148,7 @@ public class WatchlistService : IWatchlistService
 
     }
 
-    public async Task<CreateWatchlistItemResponse?> AddWatchlistAsync(
+    public async Task<CreateWatchlistItemResponse?> AddWatchlistItemAsync(
         CreateWatchlistItem watchlist)
     {
         if (await _watchlistRepository.SymbolExistsAsync(watchlist.Symbol))

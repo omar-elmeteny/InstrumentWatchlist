@@ -4,10 +4,10 @@ namespace Services;
 
 public interface IWatchlistService
 {
-    Task<IReadOnlyList<GetWatchlistItems>> GetAllWatchlistsAsync();
+    Task<IReadOnlyList<GetWatchlistItems>> GetAllWatchlistItemsAsync();
 
-    Task<GetWatchlistItemsBestPair> GetWatchlistBestPairAsync(decimal targetTotal);
+    Task<GetWatchlistItemsBestPair> GetWatchlistItemsBestPairAsync(decimal targetTotal);
 
-    Task<CreateWatchlistItemResponse?> AddWatchlistAsync(
+    Task<CreateWatchlistItemResponse?> AddWatchlistItemAsync(
         CreateWatchlistItem watchlist);
 }
