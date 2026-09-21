@@ -1,0 +1,27 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / VS Code user settings
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Test results and coverage
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

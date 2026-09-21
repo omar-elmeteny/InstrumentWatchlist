@@ -1,0 +1,6 @@
+@InstrumentWatchlistApi_HostAddress = http://localhost:5245
+
+GET {{InstrumentWatchlistApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
