@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="InstrumentWatchlistApi/InstrumentWatchlistApi.csproj" />
+  <Project Path="InstrumentWatchlistTests/InstrumentWatchlistTests.csproj" />
+</Solution>
