@@ -25,9 +25,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
-
 app.MapControllers();
+
+app.MapGet("/", async (context) => context.Response.Redirect("/swagger"));
 
 app.Run();
 
