@@ -466,7 +466,7 @@ If the first symbol is the same in both pairs, the service compares the second s
 
 ## Issues Encountered
 
-The best-pair logic initially contained several edge-case bugs. Writing unit tests exposed them. After fixing one issue, I would think of another combination of prices or symbols and discover a new failure. I spent several hours iterating between new test cases and service fixes, particularly around repeated prices and alphabetical tie-breaking. This process improved both the implementation and the test coverage.
+The best-pair logic initially contained several edge-case bugs. Writing unit tests exposed them. After fixing one issue, I would think of another combination of prices or symbols and discover a new failure. Claude also helped identify some edge cases. I implemented the fixes myself and spent some time iterating between new test cases and service fixes, particularly around repeated prices and alphabetical tie-breaking. This process improved both the implementation and the test coverage.
 
 ## Improvements with More Time
 
@@ -482,5 +482,5 @@ The best-pair logic initially contained several edge-case bugs. Writing unit tes
 - Moq for mocking service and repository dependencies in unit tests.
 - Microsoft.AspNetCore.Mvc.Testing and `WebApplicationFactory` for API integration tests.
 - Git and GitHub for source control and repository hosting.
-- GitHub Copilot, used as a development assistant for implementation guidance and code review.
+- GitHub Copilot and Claude, used as a development assistant for implementation guidance and code review.
 - Google Search for documentation and troubleshooting.
