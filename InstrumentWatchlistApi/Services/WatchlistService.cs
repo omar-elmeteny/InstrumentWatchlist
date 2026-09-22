@@ -108,7 +108,15 @@ public class WatchlistService : IWatchlistService
                     {
                         if (end != 0 && sortedWatchlist[end].TargetPrice == sortedWatchlist[end - 1].TargetPrice)
                         {
-                            end--;
+                            decimal combinedTargetPriceT = sortedWatchlist[end].TargetPrice + sortedWatchlist[end - 1].TargetPrice;
+                            if(combinedTargetPriceT <= targetTotal)
+                            {
+                                start++;
+                            }
+                            else
+                            {
+                                end--;
+                            }
                         }
                         else
                         {
