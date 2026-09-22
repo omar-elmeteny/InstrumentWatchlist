@@ -35,7 +35,7 @@ dotnet run --project InstrumentWatchlistApi
 For hot reload during development:
 
 ```bash
-DOTNET_USE_POLLING_FILE_WATCHER=1 dotnet watch
+DOTNET_USE_POLLING_FILE_WATCHER=1 dotnet watch --project InstrumentWatchlistApi
 ```
 
 The development HTTP URL is `http://localhost:5245`.
