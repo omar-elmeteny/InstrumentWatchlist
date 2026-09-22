@@ -160,12 +160,12 @@ Include the following in the README:
 
 ## Submission checklist
 
-- [ ] The solution builds from a clean checkout.
-- [ ] The build and run commands are included.
-- [ ] All tools, resources, and AI usage are disclosed.
-- [ ] No credentials, secrets, personal data, or confidential company information are included.
-- [ ] Known limitations and unfinished work are stated plainly.
-- [ ] The repository is public and accessible without authentication.
+- [✓] The solution builds from a clean checkout.
+- [✓] The build and run commands are included.
+- [✓] All tools, resources, and AI usage are disclosed.
+- [✓] No credentials, secrets, personal data, or confidential company information are included.
+- [✓] Known limitations and unfinished work are stated plainly.
+- [✓] The repository is public and accessible without authentication.
 
 ## Review discussion
 
