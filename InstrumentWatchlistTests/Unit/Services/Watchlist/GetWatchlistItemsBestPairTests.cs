@@ -394,4 +394,27 @@ public class GetWatchlistItemsBestPairTests
         Assert.Equal("No matching pair", result.Message);
         repository.Verify(mock => mock.GetAllAsync(), Times.Once);
     }
+
+    [Fact]
+    public async Task GetWatchlistItemsBestPair_WithThreeItemsAtSamePriceBelowTarget_ReturnsAlphabeticallyFirstPair()
+    {
+        const decimal targetTotal = 170.00m;
+        IReadOnlyList<WatchlistItem> items =
+        [
+            new() { Symbol = "AAA", TargetPrice = 80.00m },
+            new() { Symbol = "BBB", TargetPrice = 80.00m },
+            new() { Symbol = "CCC", TargetPrice = 80.00m }
+        ];
+        var repository = new Mock<IWatchlistRepository>();
+        repository.Setup(mock => mock.GetAllAsync()).ReturnsAsync(items);
+        var service = new WatchlistService(repository.Object);
+
+        var result = await service.GetWatchlistItemsBestPairAsync(targetTotal);
+
+        Assert.NotNull(result);
+        Assert.Equal(160.00m, result.CombinedTargetPrice);
+        Assert.Equal("Matching pair found", result.Message);
+        Assert.Equal(["AAA", "BBB"], result.Items.Select(item => item.Symbol));
+        repository.Verify(mock => mock.GetAllAsync(), Times.Once);
+    }
 }
