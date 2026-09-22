@@ -27,10 +27,12 @@ public class WatchlistService : IWatchlistService
     public async Task<GetWatchlistItemsBestPair> GetWatchlistItemsBestPairAsync(decimal targetTotal)
     {
         var watchlists = await _watchlistRepository.GetAllAsync();
-        var sortedWatchlist = watchlists
-            .OrderBy(w => w.TargetPrice)
-            .ThenBy(w => w.Symbol, StringComparer.Ordinal)
-            .ToList();
+        IReadOnlyList<WatchlistItem> sortedWatchlist = IsSortedByTargetPriceThenSymbol(watchlists)
+            ? watchlists
+            : watchlists
+                .OrderBy(w => w.TargetPrice)
+                .ThenBy(w => w.Symbol, StringComparer.Ordinal)
+                .ToList();
 
         var start = 0;
         var end = sortedWatchlist.Count - 1;
@@ -81,21 +83,6 @@ public class WatchlistService : IWatchlistService
                         watchlistBestPair.Items.Clear();
                         watchlistBestPair.Items.AddRange(pair);
                         watchlistBestPair.CombinedTargetPrice = maxCombinedTargetPrice;
-                        if (combinedTargetPrice == targetTotal)
-                        {
-                            end--;
-                        }
-                        else if (combinedTargetPrice < targetTotal)
-                        {
-                            if (end != 0 && sortedWatchlist[end].TargetPrice == sortedWatchlist[end - 1].TargetPrice)
-                            {
-                                end--;
-                            }
-                            else
-                            {
-                                start++;
-                            }
-                        }
                     }
                     else
                     {
@@ -112,20 +99,20 @@ public class WatchlistService : IWatchlistService
                             watchlistBestPair.Items.Clear();
                             watchlistBestPair.Items.AddRange(pair);
                         }
-                        if (combinedTargetPrice == targetTotal)
+                    }
+                    if (combinedTargetPrice == targetTotal)
+                    {
+                        end--;
+                    }
+                    else if (combinedTargetPrice < targetTotal)
+                    {
+                        if (end != 0 && sortedWatchlist[end].TargetPrice == sortedWatchlist[end - 1].TargetPrice)
                         {
                             end--;
                         }
-                        else if (combinedTargetPrice < targetTotal)
+                        else
                         {
-                            if (end != 0 && sortedWatchlist[end].TargetPrice == sortedWatchlist[end - 1].TargetPrice)
-                            {
-                                end--;
-                            }
-                            else
-                            {
-                                start++;
-                            }
+                            start++;
                         }
                     }
                 }
@@ -143,9 +130,27 @@ public class WatchlistService : IWatchlistService
             return watchlistBestPair;
         }
 
-
         return watchlistBestPair;
 
+    }
+
+    private static bool IsSortedByTargetPriceThenSymbol(IReadOnlyList<WatchlistItem> watchlists)
+    {
+        for (int index = 1; index < watchlists.Count; index++)
+        {
+            var previous = watchlists[index - 1];
+            var current = watchlists[index];
+            var targetPriceComparison = previous.TargetPrice.CompareTo(current.TargetPrice);
+
+            if (targetPriceComparison > 0 ||
+                targetPriceComparison == 0 &&
+                string.Compare(previous.Symbol, current.Symbol, StringComparison.Ordinal) > 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public async Task<CreateWatchlistItemResponse?> AddWatchlistItemAsync(
