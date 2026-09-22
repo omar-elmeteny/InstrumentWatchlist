@@ -6,11 +6,10 @@ The completed API uses EF Core's InMemory provider, so data is retained only whi
 
 ## Solution Overview
 
-This repository is organized into three projects:
+This repository is organized into two projects:
 
 - `InstrumentWatchlistApi`: the completed ASP.NET Core Web API and the required assessment deliverable.
 - `InstrumentWatchlistTests`: a completed xUnit test project added beyond the assessment scope to provide unit and integration coverage.
-- `InstrumentWatchlistClient`: an Angular client project reserved for future implementation; it is not part of the completed assessment scope.
 
 ## API Development
 
@@ -474,7 +473,7 @@ The best-pair logic initially contained several edge-case bugs. Writing unit tes
 ## Improvements with More Time
 
 - Add a relational database, migrations, a unique database index for symbols, and a database check constraint for positive prices for production use.
-- Implement the Angular client project.
+- Implement an Angular client project.
 
 ## Tools and Resources Used
 
