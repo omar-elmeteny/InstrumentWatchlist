@@ -22,7 +22,6 @@ This repository is organized into two projects:
 From the repository root:
 
 ```bash
-cd InstrumentWatchlistApi
 dotnet restore
 dotnet build
 ```
@@ -30,7 +29,7 @@ dotnet build
 Run the API using either command:
 
 ```bash
-dotnet run
+dotnet run --project InstrumentWatchlistApi
 ```
 
 For hot reload during development:
@@ -59,7 +58,6 @@ The test project includes:
 From the repository root, enter the test project and run all tests:
 
 ```bash
-cd InstrumentWatchlistTests
 dotnet test
 ```
 
