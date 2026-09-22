@@ -23,6 +23,7 @@ This repository is organized into three projects:
 From the repository root:
 
 ```bash
+cd InstrumentWatchlistApi
 dotnet restore
 dotnet build
 ```
@@ -56,11 +57,14 @@ The test project includes:
 - Unit tests for controller responses and service behavior using Moq to isolate dependencies.
 - Integration tests that host the API with `WebApplicationFactory` and an isolated EF Core in-memory database for each endpoint test.
 
-Run all tests from the repository root:
+From the repository root, enter the test project and run all tests:
 
 ```bash
-dotnet test InstrumentWatchlistTests/InstrumentWatchlistTests.csproj
+cd InstrumentWatchlistTests
+dotnet test
 ```
+
+The test command restores packages and builds both the test project and its API project reference. The API does not need to be running because integration tests host it in memory through `WebApplicationFactory`.
 
 ## API Reference
 
@@ -82,7 +86,7 @@ I used Swagger UI at `http://localhost:5245/swagger`.
 
 **Response types:** `201 Created`, `400 Bad Request`, and `409 Conflict`.
 
-Response structures:
+Response structure:
 
 | Status | Response body | Meaning |
 | --- | --- | --- |
@@ -280,7 +284,7 @@ After adding the lowercase `msft` item above, the response confirms uppercase st
 ]
 ```
 
-This endpoint has no request input, so it has no client-input validation cases.
+This endpoint has no request input, so it has no validation cases.
 
 ### GET `/watchlist-items/best-pair?targetTotal={amount}`
 
@@ -420,23 +424,48 @@ Response: `400 Bad Request` with an ASP.NET Core validation-problem-details obje
 
 ### Approach
 
-The service loads all saved items and sorts them by `targetPrice`, then by `symbol` alphabetically when prices are equal. It then uses two pointers: `start` begins at the lowest price and `end` at the highest.
+The service uses two phases:
+
+1. It checks whether the saved items are already ordered by `targetPrice`, then by `symbol` alphabetically when prices are equal. If not, it sorts them into that order.
+2. It scans the ordered list with two pointers. `start` points to the lowest remaining price and `end` points to the highest remaining price. The pointers always refer to different items because the scan continues only while `start < end`.
+
+The two-pointer scan follows these rules:
 
 - If the `start` price exceeds `targetTotal`, then there is no qualifying pair because the smallest price already exceeds the `targetTotal`.
-- If the pair total or the `end` price exceed `targetTotal` , `end` moves left to reduce the total.
-- If the pair total qualifies, it becomes the current best when its total is greater than the best total found so far. The pointers then move to search for a larger qualifying total while handling repeated prices.
+- If the pair total, or the `end` price alone, exceeds `targetTotal`, `end` moves left to try a smaller price.
+- If the pair qualifies and has a higher total than the current best pair, it becomes the new best pair. The service then moves a pointer to continue the search, including when prices are repeated.
 - If no qualifying pair is found, the response contains an empty `items`, `combinedTargetPrice: null`, and the message `"No matching pair"`.
 
-Sorting costs $O(n \log n)$ and the two-pointer scan costs $O(n)$, so the overall time complexity is $O(n \log n)$. This approach avoids checking every possible pair, which would take $O(n^2)$.
+For unordered input, the order check costs $O(n)$, sorting costs $O(n \log n)$, and the scan costs $O(n)$, so the overall complexity is $O(n \log n)$. For already ordered input, sorting is skipped; the order check and scan are both $O(n)$, so the total is $O(n)$. A nested-loop approach still takes $O(n^2)$ to evaluate every pair, regardless of input order.
+
+| Input state | Order check | Sort | Pointer scan | Total complexity |
+| --- | --- | --- | --- | --- |
+| Already ordered by price, then symbol | $O(n)$ | Skipped | $O(n)$ | $O(n)$ |
+| Unordered | $O(n)$ | $O(n \log n)$ | $O(n)$ | $O(n \log n)$ |
+| Nested-loop comparison | Not needed | Not needed | Checks every pair | $O(n^2)$ |
+
+The table below illustrates how the two approaches grow. The values are approximate operation counts, not measured execution times.
+
+| Watchlist items | Nested-loop approach $O(n^2)$ | Sort-and-scan approach $O(n \log n)$ |
+| ---: | ---: | ---: |
+| 1,000 | about 500,000 pair checks | about 11,000 sort-and-scan operations |
+| 100,000 | about 5 billion pair checks | about 1.8 million sort-and-scan operations |
+| 1,000,000 | about 500 billion pair checks | about 21 million sort-and-scan operations |
 
 ### Tie-breaking
 
-For a qualifying pair, the two symbols are first ordered alphabetically. If another pair has the same combined target price as the current best pair, the service compares the first symbols. When those are also equal, it compares the second symbols. It retains the pair that comes first alphabetically as required.
+Before scanning, the service orders saved items by price from lowest to highest. Items with the same price are ordered by symbol. This gives the scan a consistent order when prices are repeated.
+
+When the service considers a pair, it orders the two symbols inside that pair alphabetically. For example, a pair containing `MSFT` and `AAPL` is treated as `AAPL + MSFT`.
+
+If two pairs have the same best combined price, the service keeps the pair that comes first alphabetically. For example, `AAA + BBB` is selected before `CCC + DDD`.
+
+If the first symbol is the same in both pairs, the service compares the second symbol. For example, if `AAA + CCC` was selected first and `AAA + BBB` is considered later, the service selects `AAA + BBB`.
 
 ## Assumptions and Additional Behavior
 
 - The best-pair response includes a `message` indicating whether a matching pair was found.
-- Target prices and target totals are limited to two decimal places. Entering more decimal places is not practical in general when entering prices, so the API rejects them during validation.
+- Target prices and target totals are limited to two decimal places. The API rejects values with more decimal places during validation.
 
 ## Issues Encountered
 
